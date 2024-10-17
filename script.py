@@ -6,16 +6,17 @@ from tabulate import tabulate
 import textwrap
 import pytz
 from prompt_toolkit import prompt
+from datetime import datetime
 
 load_dotenv()
 
 network_id = ""
 node_id = ""
 
-def convert_to_egypt_time(timestamp):
-    egypt_tz = pytz.timezone('Africa/Cairo')
-    current_time = egypt_tz.localize(timestamp)
-    return current_time.strftime('%Y-%m-%d %H:%M:%S')
+def convert_to_time(timestamp):
+    timestamp = timestamp / 1000
+    dt_object = datetime.fromtimestamp(timestamp)
+    return dt_object.strftime('%Y-%m-%d %H:%M:%S')
 
 os.system('clear')
 
@@ -44,7 +45,6 @@ print("ZZZZZZZZZZZZZZZZZZZZ          EEEEEEEEEEEEEEEEEEEE         RRR         RR
 while True:
     zt_token = os.getenv('ZT_TOKEN')
     api_url = os.getenv('API_URL')
-    # api_url = "https://api.zerotier.com/api/v1/"
 
     headers = {
         "Authorization": f"Bearer {zt_token}",
@@ -192,9 +192,9 @@ while True:
                     "Authorized": member['config']['authorized'],
                     "IPs": member['config']['ipAssignments'],
                     "Physical Address": member['physicalAddress'],
-                    "Last seen": member['lastSeen'],
-                    "Last Online": member['lastOnline'],
-                    "Join Time": member['config']['creationTime']
+                    "Last seen": convert_to_time(member['lastSeen']) ,
+                    "Last Online": convert_to_time(member['lastOnline']),
+                    "Join Time": convert_to_time(member['config']['creationTime'])
                     }
                 members.append(member)
             if len(members) == 0:
