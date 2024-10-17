@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 from tabulate import tabulate
 import textwrap
-import pytz
 from prompt_toolkit import prompt
 from datetime import datetime
 
@@ -21,10 +20,11 @@ def convert_to_time(timestamp):
 os.system('clear')
 
 print("WELCOME To Your ZEROTIER-one Controller")
-print('Make sure to add your in .env file with key')
-print('Your API Token with key "ZT_TOKEN"')
-print('Your API URL with key "API_URL"')
-input("Press any key to continue: ")
+if not os.path.exists(".env"):
+    print('Make sure to add your .env file with these keys')
+    print('Your API Token with key "ZT_TOKEN"')
+    print('Your API URL with key "API_URL"')
+    exit(4)
 os.system("clear")
 
 print("ZZZZZZZZZZZZZZZZZZZZ          EEEEEEEEEEEEEEEEEEEE         RRRRRRRRRRRRRRRRR            OOOOOOOOOOOOOOOOOO")
