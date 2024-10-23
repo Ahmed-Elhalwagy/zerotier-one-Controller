@@ -47,7 +47,7 @@ while True:
     api_url = os.getenv('API_URL')
 
     headers = {
-        "Authorization": f"Bearer {zt_token}",
+        "X-ZT1-AUTH": f"{zt_token}",
         "Content-Type": "application/json"
     }
 
@@ -79,17 +79,17 @@ while True:
 
         if(response.status_code == 200):
             for net in response.json():
-                wrapped_description = '\n'.join(textwrap.wrap(net.get('description', 'N/A'), width=50))
+              #  wrapped_description = '\n'.join(textwrap.wrap(net.get('description', 'N/A'), width=50))
                 network = {
-                    "network_id": net['id'],
-                    "network_name": net['config']['name'],
-                    "description" : wrapped_description,
-                    "ip Range Start": net['config']['ipAssignmentPools'][0]['ipRangeStart'],
-                    "ip Range End": net['config']['ipAssignmentPools'][0]['ipRangeEnd'],
-                    "routes": net['config']['routes'],
-                    "private": net['config']['private'],
-                    "dns domain": net['config']['dns']['domain'],
-                    "DNS Servers": net['config']['dns']['servers']
+                    "stattus":net['status'],
+                    "network_id": net['nwid'],
+                    "network_name": net['name'],
+                  #  "description" : wrapped_description,
+                    "assignedAddresses": net['assignedAddresses'],
+                    "routes": net['routes'],
+                    "type": net['type'],
+                    "dns domain": net['dns']['domain'],
+                    "DNS Servers": net['dns']['servers']
                     }
                 networks.append(network)
             if len(networks) == 0:
