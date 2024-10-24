@@ -44,7 +44,8 @@ print("ZZZZZZZZZZZZZZZZZZZZ          EEEEEEEEEEEEEEEEEEEE         RRR         RR
 
 while True:
     zt_token = os.getenv('ZT_TOKEN')
-    api_url = os.getenv('API_URL')
+    api_url_raw = os.getenv('API_URL')
+    api_url = ""
 
     headers = {
         "X-ZT1-AUTH": f"{zt_token}",
@@ -70,7 +71,7 @@ while True:
     option = input("Chose your number: ")
 
     if option == '1':
-        api_url = f"{api_url}/network"
+        api_url = f"{api_url_raw}/network"
         os.system("clear")
         print ("Listing Current Networks")
 
@@ -105,10 +106,10 @@ while True:
     elif option == '2':
         os.system('clear')
         print("Create new Network")
-        api_url= f"{api_url}/network"
+        api_url= f"{api_url_raw}/network"
 
         network_name = input("Network Name: ")
-        network_description = input("Network Description: ")
+        # network_description = input("Network Description: ")
 
         private = input("Is the network private (y|n) : ").lower()
         private = True if private == 'y' else False if private == 'n' else True
@@ -122,9 +123,8 @@ while True:
             gateway = None
 
         req_body = {
-            "description": network_description,
-            "config": {
-                     "name": network_name,
+            # "description": network_description,
+                        "name": network_name,
                         "private": private,
                         "enableIPv6": True,
                         "mtu": 2800,
@@ -140,18 +140,18 @@ while True:
                                 "via" : gateway
                             }
                         ] ,
-                        "tags": ["tag1", "tag2"],
+                        "ssossoEnabled" : False,
+                        "tags": [],
                         "capabilities": ["route", "dns"],
                         "enableBroadcast": True,
                         "v4AssignMode": {
                                 "zt": True
                         },
                         "v6AssignMode": {
-                            "6plane": True,
+                            "6plane": False,
                             "rfc4193": False,
                             "zt": False
                         }
-            }
         }
 
         response = requests.post(url=api_url, headers=headers,data=json.dumps(req_body))
@@ -165,7 +165,7 @@ while True:
         os.system("clear")
         print ("Get Network info")
         network_id = prompt("Enter network ID: ", default=network_id)
-        api_url= f"{api_url}/network/{network_id}"
+        api_url= f"{api_url_raw}/controller/network/{network_id}"
         response = requests.get(url=api_url, headers=headers)
         if(response.status_code == 200):
             data = response.json()
@@ -177,41 +177,30 @@ while True:
         # os.system("clear")
         print("List network members")
         network_id = prompt("Enter network ID: ", default=network_id)
-        api_url= f"{api_url}/network/{network_id}/member"
-
-        members= []
+        api_url= f"{api_url_raw}/controller/network/{network_id}/member"
 
         response = requests.get(url=api_url, headers=headers)
         if(response.status_code == 200):
-            for member in response.json():
-                member = {
-                    "type": member['type'],
-                    "id": member['id'],
-                    "node_id": member['nodeId'],
-                    "Hidden" : member['hidden'],
-                    "Authorized": member['config']['authorized'],
-                    "IPs": member['config']['ipAssignments'],
-                    "Physical Address": member['physicalAddress'],
-                    "Last seen": convert_to_time(member['lastSeen']) ,
-                    "Last Online": convert_to_time(member['lastOnline']),
-                    "Join Time": convert_to_time(member['config']['creationTime'])
-                    }
-                members.append(member)
-            if len(members) == 0:
-                print("!!!!! No Members to Display !!!!!")
-            else:
-                # print(json.dumps(response.json(), indent=4))
-                print(tabulate(members, headers="keys", tablefmt="grid"))
-                if(len(members) == 1):
-                    node_id = members[0]["node_id"]
+            members = response.json()
+            members_enriched = []
+
+            for m in members:
+                api_url_member = f"{api_url_raw}/controller/network/{network_id}/member/{m}"
+                response = requests.get(url=api_url_member, headers=headers)
+                m_data = response.json()
+                if(m_data["authorized"] == True):
+                    members_enriched.append({"nodeId": m, "authorized": True, "ipAssignments": m_data['ipAssignments']})
+                else:
+                    members_enriched.append({"nodeId": m, "authorized": False, "ipAssignments": m_data['ipAssignments']})
+            members_list = [{"Member ID": member['nodeId'], "Authorized": member['authorized'], "IP Assignments": member['ipAssignments']} for member in members_enriched]
+            print(tabulate(members_list, headers="keys", tablefmt="grid"))
         else:
             print(f"Error {response.text} {response.status_code}")
-
     elif option == "5":
         print ("Get Network Member info")
         network_id = prompt("Enter network ID: ", default=network_id)
         node_id = prompt("Enter Member ID (Node ID): ", default=node_id)
-        api_url= f"{api_url}/network/{network_id}/member/{node_id}"
+        api_url= f"{api_url_raw}/controller/network/{network_id}/member/{node_id}"
         response = requests.get(url=api_url, headers=headers)
         if(response.status_code == 200):
             data = response.json()
@@ -224,7 +213,7 @@ while True:
         print("Authorize a network member")
         network_id = prompt("Enter network ID: ", default=network_id)
         node_id = prompt("Enter Node ID (Node ID): ", default=node_id)
-        api_url= f"{api_url}/network/{network_id}/member/{node_id}"
+        api_url= f"{api_url_raw}/controller/network/{network_id}/member/{node_id}"
         req_body = {
               "config": {
               "authorized": True
@@ -241,11 +230,9 @@ while True:
         print("Deauthorize network member")
         network_id = prompt("Enter network ID: ", default=network_id)
         node_id = prompt("Enter Member ID (Node ID): ", default=node_id)
-        api_url= f"{api_url}/network/{network_id}/member/{node_id}"
+        api_url= f"{api_url_raw}/controller/network/{network_id}/member/{node_id}"
         req_body = {
-              "config": {
               "authorized": False
-            }
         }
         response = requests.post(url=api_url, headers=headers,data=json.dumps(req_body))
         if(response.status_code == 200):
@@ -259,7 +246,7 @@ while True:
         print ("Delete A Network Member")
         network_id = prompt("Enter network ID: ", default=network_id)
         node_id = prompt("Enter Member ID (Node ID): ", default=node_id)
-        api_url= f"{api_url}/network/{network_id}/member/{node_id}"
+        api_url= f"{api_url_raw}/controller/network/{network_id}/member/{node_id}"
         response = requests.delete(url=api_url, headers=headers)
         if(response.status_code == 200):
             print(f"################ The Member {node_id} has been deleted from {network_id} ################")
@@ -269,7 +256,7 @@ while True:
     elif option == "9":
         print ("Delete Network")
         network_id = input("Enter network ID: ")
-        api_url= f"{api_url}/network/{network_id}"
+        api_url= f"{api_url_raw}/controller/network/{network_id}"
         response = requests.delete(url=api_url, headers=headers)
         if(response.status_code == 200):
             print(f"################ The Netowrk {network_id} has been deleted Sucessfully ################")
@@ -278,7 +265,7 @@ while True:
 
     elif option == "10":
         print("################ STATUS ################")
-        api_url= f"{api_url}/status"
+        api_url= f"{api_url_raw}/status"
         response = requests.get(url=api_url, headers=headers)
         if(response.status_code == 200):
             data = response.json()
@@ -288,7 +275,7 @@ while True:
 
     elif option == "11":
         print("################ TOKEN ################")
-        api_url= f"{api_url}/randomToken"
+        api_url= f"{api_url_raw}/randomToken"
         response = requests.get(url=api_url, headers=headers)
         if(response.status_code == 200):
             data = response.json()
@@ -299,7 +286,7 @@ while True:
 
     elif option == "12":
         print("################ ADD API Token ################")
-        random_api_url= f"{api_url}/randomToken"
+        random_api_url= f"{api_url_raw}/randomToken"
         response = requests.get(url=random_api_url, headers=headers)
         if(response.status_code == 200):
             data = response.json()
@@ -313,7 +300,7 @@ while True:
                 "token": token
             }
 
-            api_url= f"{api_url}/user/{user_id}/token"
+            api_url= f"{api_url_raw}/user/{user_id}/token"
             response = requests.post(url=api_url, headers=headers, data=json.dumps(req_body))
             if(response.status_code == 200):
                 print(f"The Token '{token_name}' Has been created for user {user_id}")
@@ -327,7 +314,7 @@ while True:
         print("################ DELETE API TOKEN ################")
         user_id = input("Enter User ID: ")
         token_name = input("Enter Token Name: ")
-        api_url= f"{api_url}/user/{user_id}/token/{token_name}"
+        api_url= f"{api_url_raw}/user/{user_id}/token/{token_name}"
         response = requests.delete(url=api_url, headers=headers)
         if(response.status_code == 200):
                 print(f"Token {token_name} was Deleted Successfuly")
