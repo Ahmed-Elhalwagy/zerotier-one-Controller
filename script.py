@@ -87,12 +87,9 @@ while True:
                 network = {
                     "network_id": net_data['nwid'],
                     "network_name": net_data['name'],
-                    "ipRangeStart": net_data['assignedAddresses']['ipRangeStart'],
-                    "ipRangeEnd": net_data['assignedAddresses']['ipRangeEnd'],
+                    "ipAssignmentPools": net_data['ipAssignmentPools'],
                     "routes": net_data['routes'],
-                    "type": net_data['type'],
-                    "dns domain": net_data['dns']['domain'],
-                    "DNS Servers": net_data['dns']['servers'],
+                    "DNS": net_data['dns'],
                     "Created at": convert_to_time(net_data['creationTime'])
                     }
                 networks.append(network)
@@ -157,7 +154,6 @@ while True:
             print(f"Error {response.text} {response.status_code}")
 
     elif option == "4":
-        # os.system("clear")
         print("List network members")
         network_id = prompt("Enter network ID: ", default=network_id)
         api_url= f"{api_url_raw}/controller/network/{network_id}/member"
@@ -171,12 +167,15 @@ while True:
                 api_url_member = f"{api_url_raw}/controller/network/{network_id}/member/{m}"
                 response = requests.get(url=api_url_member, headers=headers)
                 m_data = response.json()
-                if(m_data["authorized"] == True):
-                    members_enriched.append({"nodeId": m, "authorized": True, "ipAssignments": m_data['ipAssignments']})
-                else:
-                    members_enriched.append({"nodeId": m, "authorized": False, "ipAssignments": m_data['ipAssignments']})
-            members_list = [{"Member ID": member['nodeId'], "Authorized": member['authorized'], "IP Assignments": member['ipAssignments']} for member in members_enriched]
-            print(tabulate(members_list, headers="keys", tablefmt="grid"))
+                member_enriched = {
+                    "nodeId": m,
+                    "ipAssignments": m_data['ipAssignments',],
+                    "Authorized": m_data["authorized"],
+                    "creationTime": convert_to_time(m_data['creationTime']),
+                    "lastAuthorizedTime": convert_to_time(m_data['lastAuthorizedTime']),
+                    } 
+                members_enriched.append(member_enriched)
+            print(tabulate(members_enriched, headers="keys", tablefmt="grid"))
         else:
             print(f"Error {response.text} {response.status_code}")
     elif option == "5":
