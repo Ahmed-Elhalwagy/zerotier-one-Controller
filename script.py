@@ -169,7 +169,7 @@ while True:
                 m_data = response.json()
                 member_enriched = {
                     "nodeId": m,
-                    "ipAssignments": m_data['ipAssignments',],
+                    "ipAssignments": m_data['ipAssignments'],
                     "Authorized": m_data["authorized"],
                     "creationTime": convert_to_time(m_data['creationTime']),
                     "lastAuthorizedTime": convert_to_time(m_data['lastAuthorizedTime']),
