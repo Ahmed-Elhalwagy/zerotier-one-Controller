@@ -71,7 +71,7 @@ while True:
     option = input("Chose your number: ")
 
     if option == '1':
-        api_url = f"{api_url_raw}/network"
+        api_url = f"{api_url_raw}/controller/network"
         os.system("clear")
         print ("Listing Current Networks")
 
@@ -80,23 +80,25 @@ while True:
 
         if(response.status_code == 200):
             for net in response.json():
-              #  wrapped_description = '\n'.join(textwrap.wrap(net.get('description', 'N/A'), width=50))
+                print(net)
+                api_url_network= f"{api_url_raw}/controller/network/{net}"
+                response = requests.get(url=api_url_network, headers=headers)
+                net_data = response.json()
                 network = {
-                    "stattus":net['status'],
-                    "network_id": net['nwid'],
-                    "network_name": net['name'],
-                  #  "description" : wrapped_description,
-                    "assignedAddresses": net['assignedAddresses'],
-                    "routes": net['routes'],
-                    "type": net['type'],
-                    "dns domain": net['dns']['domain'],
-                    "DNS Servers": net['dns']['servers']
+                    "network_id": net_data['nwid'],
+                    "network_name": net_data['name'],
+                    "ipRangeStart": net_data['assignedAddresses']['ipRangeStart'],
+                    "ipRangeEnd": net_data['assignedAddresses']['ipRangeEnd'],
+                    "routes": net_data['routes'],
+                    "type": net_data['type'],
+                    "dns domain": net_data['dns']['domain'],
+                    "DNS Servers": net_data['dns']['servers'],
+                    "Created at": convert_to_time(net_data['creationTime'])
                     }
                 networks.append(network)
             if len(networks) == 0:
                 print("!!!!! No Netowks to Display !!!!!")
             else:
-                # print(json.dumps(response.json(), indent=4))
                 print(tabulate(networks, headers="keys", tablefmt="grid"))
                 if(len(networks) == 1):
                     network_id = networks[0]["network_id"]
@@ -106,27 +108,14 @@ while True:
     elif option == '2':
         os.system('clear')
         print("Create new Network")
-        api_url= f"{api_url_raw}/network"
-
         network_name = input("Network Name: ")
-        # network_description = input("Network Description: ")
-
-        private = input("Is the network private (y|n) : ").lower()
-        private = True if private == 'y' else False if private == 'n' else True
-
         ip_start = input("Ip Range start (e.g., 10.0.0.1): ")
         ip_end = input("Ip Range End (e.g., 10.0.0.254): ")
-
-        subnet = input("Subnet: ")
-        gateway = input("Gateway (Null): ").lower()
-        if gateway == "null" or gateway == "":
-            gateway = None
-
+        subnet = input("Subnet(e.g., 10.0.0.0/24): ")
+        api_url= f"{api_url_raw}/controller/network"
         req_body = {
-            # "description": network_description,
                         "name": network_name,
-                        "private": private,
-                        "enableIPv6": True,
+                        "private": True,
                         "mtu": 2800,
                         "ipAssignmentPools":
                          [ {
@@ -137,20 +126,14 @@ while True:
                         "routes": [
                             {
                                 "target": subnet,
-                                "via" : gateway
+                                "via" : None
                             }
                         ] ,
                         "ssossoEnabled" : False,
-                        "tags": [],
                         "capabilities": ["route", "dns"],
                         "enableBroadcast": True,
                         "v4AssignMode": {
                                 "zt": True
-                        },
-                        "v6AssignMode": {
-                            "6plane": False,
-                            "rfc4193": False,
-                            "zt": False
                         }
         }
 
