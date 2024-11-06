@@ -62,11 +62,12 @@ while True:
     7- Deauthorize member
     8- Delete a Network member
     9- Delete Network
-    10- Status (account tied up with the API token)
-    11- Get Random 32 char Token
-    12- Add API Token
-    13- Delete API Token
-    14- quit
+    10- Add / Rename Network 
+    11- Status (account tied up with the API token)
+    12- Get Random 32 char Token
+    13- Add API Token
+    14- Delete API Token
+    15- quit
     ''')
     option = input("Chose your number: ")
 
