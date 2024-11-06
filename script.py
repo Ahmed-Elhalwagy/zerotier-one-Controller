@@ -197,9 +197,7 @@ while True:
         node_id = prompt("Enter Node ID (Node ID): ", default=node_id)
         api_url= f"{api_url_raw}/controller/network/{network_id}/member/{node_id}"
         req_body = {
-              "config": {
               "authorized": True
-            }
         }
         response = requests.post(url=api_url, headers=headers,data=json.dumps(req_body))
         if(response.status_code == 200):
@@ -246,6 +244,20 @@ while True:
             print(f"Error {response.text} {response.status_code}")
 
     elif option == "10":
+        print ("Add a name / Rename Network")
+        network_id = prompt("Enter network ID: ", default=network_id)
+        network_name = input("Enter Network Name: ")
+        api_url= f"{api_url_raw}/controller/network/{network_id}"
+        req_body = {
+            "name" : network_name
+        }
+        response = requests.post(url=api_url, headers=headers, data=json.dumps(req_body))
+        if(response.status_code == 200):
+            print(f"################ The Network {network_id} has assigned with name {network_name} ################")
+        else:
+            print(f"Error {response.text} {response.status_code}")        
+
+    elif option == "11":
         print("################ STATUS ################")
         api_url= f"{api_url_raw}/status"
         response = requests.get(url=api_url, headers=headers)
@@ -255,7 +267,8 @@ while True:
         else:
             print(f"Error {response.text} {response.status_code}")
 
-    elif option == "11":
+
+    elif option == "12":
         print("################ TOKEN ################")
         api_url= f"{api_url_raw}/randomToken"
         response = requests.get(url=api_url, headers=headers)
@@ -266,7 +279,7 @@ while True:
             print(f"Error {response.text} {response.status_code}")
 
 
-    elif option == "12":
+    elif option == "13":
         print("################ ADD API Token ################")
         random_api_url= f"{api_url_raw}/randomToken"
         response = requests.get(url=random_api_url, headers=headers)
@@ -292,7 +305,7 @@ while True:
         else:
             print(f"Error {response.text} {response.status_code}")
 
-    elif option == "13":
+    elif option == "14":
         print("################ DELETE API TOKEN ################")
         user_id = input("Enter User ID: ")
         token_name = input("Enter Token Name: ")
@@ -303,6 +316,6 @@ while True:
         else:
             print(f"Error {response.text} {response.status_code}")
 
-    elif option == '14':
+    elif option == '15':
         print("GoodBye")
         exit(0)
