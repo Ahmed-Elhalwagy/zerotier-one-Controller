@@ -79,7 +79,6 @@ while True:
 
         if(response.status_code == 200):
             for net in response.json():
-                print(net)
                 api_url_network= f"{api_url_raw}/controller/network/{net}"
                 response = requests.get(url=api_url_network, headers=headers)
                 net_data = response.json()
@@ -256,23 +255,7 @@ while True:
         else:
             print(f"Error {response.text} {response.status_code}")        
 
-    elif option == "10":
-        print ("Add a name / RenameMember")
-        network_id = prompt("Enter network ID: ", default=network_id)
-        node_id = prompt("Enter Member ID (Node ID): ", default=node_id)
-        api_url= f"{api_url_raw}/controller/user/{network_id}/member/{node_id}"
-
-        member_name = input("Enter The New Member Name: ")
-        req_body = {
-            "displayName" : member_name
-        }
-        response = requests.post(url=api_url, headers=headers, data=json.dumps(req_body))
-        if(response.status_code == 200):
-            print(f"################ The Member {node_id} has assigned with name {member_name} ################")
-        else:
-            print(f"Error {response.text} {response.status_code}")    
-
-    elif option == "12":
+    elif option == "11":
         print("################ STATUS ################")
         api_url= f"{api_url_raw}/status"
         response = requests.get(url=api_url, headers=headers)
@@ -282,6 +265,6 @@ while True:
         else:
             print(f"Error {response.text} {response.status_code}")
 
-    elif option == '13':
+    elif option == '12':
         print("GoodBye")
         exit(0)
